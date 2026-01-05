@@ -28,6 +28,46 @@ Your Claude Code clients generate encryption keys locally and use Happy Server a
 
 That said, Happy Server is open source and self-hostable if you prefer running your own infrastructure. The security model is identical whether you use our servers or your own.
 
+## Running It
+
+Happy Server requires **Postgres**, **Redis**, and an **S3-compatible** object store (tested with MinIO). The server will fail to boot unless these are reachable and the S3 bucket exists.
+
+### Required environment variables
+
+- `DATABASE_URL` (Postgres connection string)
+- `REDIS_URL` (Redis connection string)
+- `HANDY_MASTER_SECRET` (used to derive auth/encryption keys)
+- `S3_HOST`, `S3_PORT`, `S3_USE_SSL` (S3 endpoint settings)
+- `S3_REGION` (required for AWS if your bucket is not in `us-east-1`)
+- `S3_ACCESS_KEY`, `S3_SECRET_KEY` (S3 credentials)
+- `S3_BUCKET` (bucket must already exist)
+- `S3_PUBLIC_URL` (base URL returned to clients, e.g. `http://localhost:9000/happy`)
+
+Optional (feature-gated):
+- GitHub connect/webhooks: `GITHUB_APP_ID`, `GITHUB_PRIVATE_KEY`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI` (or `GITHUB_REDIRECT_URL`), `GITHUB_WEBHOOK_SECRET`
+- Voice: `ELEVENLABS_API_KEY`
+- Metrics: `METRICS_ENABLED` (defaults to enabled), `METRICS_PORT` (defaults to `9090`)
+
+### Local development (host process + Docker deps)
+
+1. Start dependencies:
+   - `yarn db`
+   - `yarn redis`
+   - `yarn s3`
+   - `yarn s3:init`
+2. Configure env: copy/edit `.env.dev` (it includes working local defaults).
+3. Apply DB migrations: `yarn migrate` (or `yarn prisma migrate deploy`).
+4. Start the server: `yarn dev` (or `yarn start`).
+
+### Running the server in Docker
+
+Build and run the server container, pointing it at your Postgres/Redis/MinIO.
+
+- If your dependencies are running on your host machine, use `host.docker.internal` on macOS/Windows for `DATABASE_URL`, `REDIS_URL`, and `S3_HOST`.
+- If your dependencies are in the same Docker network, use the dependency container/service names.
+
+Note: the image runs `prisma migrate deploy` on startup. If you prefer managing migrations separately, override the container command and run migrations yourself.
+
 ## License
 
 MIT - Use it, modify it, deploy it anywhere.

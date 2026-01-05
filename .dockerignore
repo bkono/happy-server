@@ -1,0 +1,7 @@
+node_modules
+.pgdata
+.minio
+.logs
+.git
+.vscode
+.DS_Store

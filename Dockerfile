@@ -31,15 +31,17 @@ RUN apt-get update && apt-get install -y python3 ffmpeg && rm -rf /var/lib/apt/l
 
 # Set environment to production
 ENV NODE_ENV=production
+ENV PORT=3005
 
 # Copy necessary files from the builder stage
 COPY --from=builder /app/tsconfig.json ./tsconfig.json
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/sources ./sources
 
 # Expose the port the app will run on
-EXPOSE 3000
+EXPOSE 3005
 
 # Command to run the application
-CMD ["yarn", "start"] 
+CMD ["sh", "-c", "yarn prisma migrate deploy && yarn start"]

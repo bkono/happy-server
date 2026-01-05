@@ -22,12 +22,17 @@ class AuthModule {
         if (this.tokens) {
             return; // Already initialized
         }
-        
+
+        const masterSecret = process.env.HANDY_MASTER_SECRET;
+        if (!masterSecret) {
+            throw new Error('Missing required environment variable: HANDY_MASTER_SECRET');
+        }
+
         log({ module: 'auth' }, 'Initializing auth module...');
         
         const generator = await privacyKit.createPersistentTokenGenerator({
             service: 'handy',
-            seed: process.env.HANDY_MASTER_SECRET!
+            seed: masterSecret
         });
 
         
@@ -38,7 +43,7 @@ class AuthModule {
         
         const githubGenerator = await privacyKit.createEphemeralTokenGenerator({
             service: 'github-happy',
-            seed: process.env.HANDY_MASTER_SECRET!,
+            seed: masterSecret,
             ttl: 5 * 60 * 1000 // 5 minutes
         });
 
